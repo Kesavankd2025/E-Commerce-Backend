@@ -9,6 +9,7 @@ import { AppDataSource } from "../data-source";
 import { Member } from "../entity/Member";
 import { Admin } from "../entity/Admin";
 import { AdminUser } from "../entity/AdminUser";
+import { Customer } from "../entity/Customer";
 import { ObjectId } from "mongodb";
 
 import { UserToken } from "../entity/UserToken";
@@ -17,7 +18,7 @@ export interface AuthPayload {
     userId: string;
     role?: string;
     roleId?: string;
-    userType?: "ADMIN" | "ADMIN_USER" | "MEMBER";
+    userType?: "ADMIN" | "ADMIN_USER" | "MEMBER" | "CUSTOMER";
 }
 
 export class AuthMiddleware implements ExpressMiddlewareInterface {
@@ -64,13 +65,18 @@ export class AuthMiddleware implements ExpressMiddlewareInterface {
                     _id: new ObjectId(userId),
                     isDelete: 0
                 });
+            } else if (userType === "CUSTOMER") {
+                user = await AppDataSource.getMongoRepository(Customer).findOneBy({
+                    _id: new ObjectId(userId),
+                    isDelete: 0
+                });
             }
 
             if (!user) {
                 throw new UnauthorizedError("User not found or account deleted");
             }
 
-            if (user.isActive !== 1) {
+            if (!user.isActive) {
                 throw new UnauthorizedError("Account is inactive. Please contact admin.");
             }
 

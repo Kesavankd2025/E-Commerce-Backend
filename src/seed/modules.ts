@@ -51,6 +51,7 @@ export async function seedDefaultModules() {
     "Member Suggestions",
     "Chief Guest List",
     "Locations",
+    "Shipping Methods",
   ];
 
   const moduleEntities = modules.map(name => {

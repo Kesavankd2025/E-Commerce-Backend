@@ -10,7 +10,7 @@ export class UserToken {
     userId: ObjectId;
 
     @Column()
-    userType: "ADMIN" | "ADMIN_USER" | "MEMBER";
+    userType: "ADMIN" | "ADMIN_USER" | "MEMBER" | "CUSTOMER";
 
     @Column()
     token: string;

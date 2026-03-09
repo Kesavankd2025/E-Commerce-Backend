@@ -8,9 +8,10 @@ import {
 import { ObjectId } from "mongodb";
 export enum OrderStatus {
   PENDING = "Pending",
-  PROCESSING = "Processing",
+  PACKED = "Packed",
+  SHIPPED = "Shipped",
   DELIVERED = "Delivered",
-  CANCELLED = "Cancelled",
+  RETURN = "Return",
 }
 
 export enum PaymentStatus {
@@ -24,33 +25,85 @@ export class Order {
   @ObjectIdColumn()
   id: ObjectId;
 
-  // LOCATION
-  @Column()
-  zoneId: ObjectId;
+  @Column({ nullable: true })
+  userId: ObjectId;
 
-  @Column()
-  regionId: ObjectId;
-
-  @Column()
-  chapterId: ObjectId;
-
-  // MEMBER
-  @Column()
-  memberId: ObjectId;
-
-  // PRODUCT (single product for now)
-  @Column("simple-json", { nullable: true })
+  @Column("simple-json")
   products: {
     productId: ObjectId;
-    amount: number;
-    qty: number;
+    productName: string;
+    sku: string | number;
+    combination?: {
+      attributeId: ObjectId;
+      value: string;
+    }[];
     price: number;
+    mrp: number;
+    qty: number;
     total: number;
+    image?: {
+      fileName?: string;
+      path?: string;
+      originalName?: string;
+    };
   }[];
 
   @Column({ default: 0 })
-  grantTotal: number;
-  // SYSTEM
+  totalAmount: number;
+
+  @Column({ default: 0 })
+  taxAmount: number;
+
+  @Column({ default: 0 })
+  shippingCharge: number;
+
+  @Column({ default: 0 })
+  grandTotal: number;
+
+  @Column()
+  paymentMethod: string;
+
+  @Column({
+    type: "enum",
+    enum: ["Pending", "Paid", "Failed"],
+    default: "Pending"
+  })
+  paymentStatus: string;
+
+  @Column({
+    type: "enum",
+    enum: ["Pending", "Packed", "Shipped", "Delivered", "Return"],
+    default: "Pending"
+  })
+  orderStatus: string;
+
+  @Column({ nullable: true })
+  shippingMethodId: ObjectId;
+
+  @Column("simple-json")
+  address: {
+    name: string;
+    phone: string;
+    doorNo: string;
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+
+  // Keep these for potential backward compatibility or internal use if needed, but make nullable
+  @Column({ nullable: true })
+  zoneId?: ObjectId;
+
+  @Column({ nullable: true })
+  regionId?: ObjectId;
+
+  @Column({ nullable: true })
+  chapterId?: ObjectId;
+
+  @Column({ nullable: true })
+  memberId?: ObjectId;
+
   @Column({ default: 1 })
   isActive: number;
 
@@ -69,32 +122,15 @@ export class Order {
   @Column({ nullable: true })
   updatedBy?: ObjectId;
 
-  // ORDER STATUS
-  @Column({
-    type: "enum",
-    enum: OrderStatus,
-    default: OrderStatus.PENDING,
-  })
-  status: OrderStatus;
-
-  // PAYMENT STATUS
-  @Column({
-    type: "enum",
-    enum: PaymentStatus,
-    default: PaymentStatus.PENDING,
-  })
-  paymentStatus: PaymentStatus;
-
-  @Column({
-    type: "enum",
-    enum: ["Offline", "Online"],
-    default: "Offline",
-  })
-  paymentMode: "Offline" | "Online";
+  @Column({ nullable: true })
+  orderId?: string;
 
   @Column({ nullable: true })
-  paymentProof: string;
+  cancelReason?: string;
 
-  @Column()
-  orderId?: string;
+  @Column({ nullable: true })
+  cancelDate?: Date;
+
+  @Column({ default: "Website" })
+  orderFrom: string; // "Website" or "POS"
 }
