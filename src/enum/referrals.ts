@@ -1,0 +1,18 @@
+
+export enum ReferralFor {
+  MY_CHAPTER = "MY_CHAPTER",
+  OTHER_CHAPTER = "OTHER_CHAPTER"
+}
+
+export enum ReferralType {
+  SELF = "SELF",
+  OUTSIDE = "OUTSIDE"
+}
+export enum ReferralStatus {
+  NOT_CONTACTED = "NOT_CONTACTED",
+  CONTACTED = "CONTACTED",
+  NO_RESPONSE = "NO_RESPONSE",
+  GOT_BUSINESS = "GOT_BUSINESS",
+  NOT_GOOD_FIT = "NOT_GOOD_FIT",
+  CONFIDENTIAL = "CONFIDENTIAL"
+}
