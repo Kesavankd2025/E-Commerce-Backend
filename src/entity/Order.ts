@@ -60,6 +60,9 @@ export class Order {
   @Column({ default: 0 })
   grandTotal: number;
 
+  @Column({ default: 0 })
+  overallDiscount: number;
+
   @Column()
   paymentMethod: string;
 

@@ -44,7 +44,7 @@ export class AdminPosController {
     @Post("/customers/add")
     async addCustomer(@Body() body: any, @Res() res: any) {
         try {
-            const { fullName, phoneNumber, email } = body;
+            const { fullName, phoneNumber, address } = body;
 
             const exists = await this.customerRepo.findOneBy({ phoneNumber, isDelete: 0 });
             if (exists) return response(res, StatusCodes.BAD_REQUEST, "Mobile number already exists");
@@ -52,7 +52,7 @@ export class AdminPosController {
             const customer = new Customer();
             customer.fullName = fullName;
             customer.phoneNumber = phoneNumber;
-            customer.email = email;
+            customer.address = address;
             customer.password = await bcrypt.hash("123456", 10); // Default password for POS created users
             customer.isActive = true;
             customer.isDelete = 0;
@@ -110,6 +110,7 @@ export class AdminPosController {
             order.taxAmount = taxAmount;
             order.shippingCharge = shippingCharge || 0;
             order.grandTotal = grandTotal;
+            order.overallDiscount = overallDiscount || 0;
             order.paymentMethod = payments.length > 1 ? "Multiple" : payments[0].method;
             order.paymentStatus = "Paid";
             order.orderStatus = "Delivered"; // POS orders are usually delivered immediately

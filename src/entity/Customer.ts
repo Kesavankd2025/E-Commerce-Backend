@@ -16,6 +16,9 @@ export class Customer {
     @Column({ nullable: true })
     email: string;
 
+    @Column({ nullable: true })
+    address: string;
+
     @Column()
     password: string;
 
