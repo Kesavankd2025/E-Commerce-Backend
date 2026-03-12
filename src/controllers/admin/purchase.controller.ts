@@ -9,6 +9,7 @@ import { Vendor } from "../../entity/Vendor";
 import { VendorPayment } from "../../entity/VendorPayment";
 import { handleErrorResponse, pagination, response } from "../../utils";
 import { Request, Response } from "express";
+import { logStockChange } from "../../utils/stockLogger";
 
 interface RequestWithUser extends Request {
     user: AuthPayload;
@@ -195,8 +196,25 @@ export class PurchaseController {
                         );
 
                         if (variantIdx !== -1) {
-                            product.attributes[variantIdx].stock = (product.attributes[variantIdx].stock || 0) + Number(poItem.receivedQty);
+                            const prevStock = Number(product.attributes[variantIdx].stock) || 0;
+                            const receivedQty = Number(poItem.receivedQty);
+                            product.attributes[variantIdx].stock = prevStock + receivedQty;
                             await this.productRepo.save(product);
+
+                            // Log stock change
+                            await logStockChange({
+                                productId: product.id,
+                                productName: product.name,
+                                attributeId: product.attributes[variantIdx].sku,
+                                variantLabel: "", // Can add variant description if needed
+                                previousStock: prevStock,
+                                quantity: receivedQty,
+                                currentStock: product.attributes[variantIdx].stock,
+                                type: "purchase",
+                                referenceModel: "PurchaseOrder",
+                                referenceId: po.id,
+                                userId: new ObjectId(req.user.userId)
+                            });
                         }
                     }
                 }

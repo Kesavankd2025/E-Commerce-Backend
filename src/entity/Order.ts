@@ -18,6 +18,7 @@ export enum PaymentStatus {
   PENDING = "Pending",
   PAID = "Paid",
   FAILED = "Failed",
+  PARTIALLY_PAID = "Partially Paid",
 }
 
 @Entity("orders")
@@ -68,7 +69,7 @@ export class Order {
 
   @Column({
     type: "enum",
-    enum: ["Pending", "Paid", "Failed"],
+    enum: ["Pending", "Paid", "Failed", "Partially Paid"],
     default: "Pending"
   })
   paymentStatus: string;

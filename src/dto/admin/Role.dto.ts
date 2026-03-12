@@ -6,13 +6,10 @@ import {
   IsString,
   ValidateNested,
   IsMongoId,
-  IsOptional,
-  IsEnum
+  IsOptional
 } from "class-validator";
 import { Type } from "class-transformer";
 import { ObjectId } from "mongodb";
-import { RoleType } from "../../enum/role";
-
 class PermissionActionsDto {
   @IsBoolean()
   view: boolean;
@@ -46,14 +43,6 @@ export class CreateRoleDto {
   @ValidateNested({ each: true })
   @Type(() => RolePermissionDto)
   permissions: RolePermissionDto[];
-
-  @IsOptional()
-  @IsEnum(RoleType)
-  roleType: RoleType;
-
-  @IsOptional()
-  @IsBoolean()
-  mobileAdminAccess?: boolean;
 }
 export class UpdateRoleDto {
   @IsString()
@@ -64,12 +53,4 @@ export class UpdateRoleDto {
   @ValidateNested({ each: true })
   @Type(() => RolePermissionDto)
   permissions: RolePermissionDto[];
-
-  @IsOptional()
-  @IsEnum(RoleType)
-  roleType: RoleType;
-
-  @IsOptional()
-  @IsBoolean()
-  mobileAdminAccess?: boolean;
 }

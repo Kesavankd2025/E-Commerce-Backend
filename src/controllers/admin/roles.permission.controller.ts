@@ -89,8 +89,6 @@ export class RoleController {
       role.isDelete = 0;
       role.createdBy = new ObjectId(req.user.userId);
       role.updatedBy = new ObjectId(req.user.userId);
-      role.roleType = body.roleType as RoleType;
-      role.mobileAdminAccess = (body.roleType === RoleType.CHAPTER) ? !!body.mobileAdminAccess : false;
 
       const savedRole = await this.roleRepository.save(role);
 
@@ -157,8 +155,6 @@ export class RoleController {
       }
 
       role.name = body.name;
-      role.roleType = body.roleType as RoleType;
-      role.mobileAdminAccess = (body.roleType === RoleType.CHAPTER) ? !!body.mobileAdminAccess : false;
       role.permissions = body.permissions.map((p) => ({
         moduleId: new ObjectId(p.moduleId),
         actions: p.actions,

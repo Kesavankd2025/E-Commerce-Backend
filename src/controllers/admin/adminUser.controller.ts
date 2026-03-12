@@ -80,7 +80,6 @@ export class AdminUserController {
             adminUser.name = body.name;
             adminUser.profileImage = body.profileImage || undefined;
             adminUser.email = body.email;
-            adminUser.companyName = body.companyName;
             adminUser.phoneNumber = body.phoneNumber;
             adminUser.pin = await bcrypt.hash(body.pin, 10);
             adminUser.roleId = new ObjectId(body.roleId);
@@ -374,7 +373,6 @@ export class AdminUserController {
             console.log(body.profileImage, "body.profileImage")
             if (body.profileImage) adminUser.profileImage = body.profileImage;
             if (body.email) adminUser.email = body.email;
-            if (body.companyName) adminUser.companyName = body.companyName;
 
             if (body.pin) {
                 adminUser.pin = await bcrypt.hash(body.pin, 10);

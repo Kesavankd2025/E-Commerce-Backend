@@ -7,6 +7,7 @@ import { Product } from "../../entity/Product";
 import { CreateProductDto, UpdateProductDto } from "../../dto/admin/product.dto";
 import { handleErrorResponse, pagination, response } from "../../utils";
 import { Request, Response } from "express";
+import { logStockChange } from "../../utils/stockLogger";
 
 interface RequestWithFiles extends Request {
     user: AuthPayload;
@@ -50,6 +51,26 @@ export class ProductController {
             doc.createdAt = new Date();
 
             await this.repo.save(doc);
+
+            // Log initial stock
+            if (doc.attributes && Array.isArray(doc.attributes)) {
+                for (const attr of doc.attributes) {
+                    if (attr.stock > 0) {
+                        await logStockChange({
+                            productId: doc.id,
+                            productName: doc.name,
+                            attributeId: attr.sku,
+                            variantLabel: "", // Need to construct this or leave empty
+                            previousStock: 0,
+                            quantity: Number(attr.stock),
+                            currentStock: Number(attr.stock),
+                            type: "initial",
+                            userId: new ObjectId(req.user.userId)
+                        });
+                    }
+                }
+            }
+
             return response(res, StatusCodes.CREATED, "Product created successfully", doc);
         } catch (error: any) {
             return handleErrorResponse(error, res);

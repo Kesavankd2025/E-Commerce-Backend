@@ -20,9 +20,6 @@ export class AdminUser {
     email: string
 
     @Column()
-    companyName: string
-
-    @Column()
     phoneNumber: string
 
     @Column()

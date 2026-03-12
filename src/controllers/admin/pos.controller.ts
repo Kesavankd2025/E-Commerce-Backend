@@ -8,6 +8,7 @@ import { ObjectId } from "mongodb";
 import { StatusCodes } from "http-status-codes";
 import { response, pagination, handleErrorResponse } from "../../utils";
 import { AuthMiddleware } from "../../middlewares/AuthMiddleware";
+import { deductStockForOrder } from "../../utils/stockLogger";
 import bcrypt from "bcryptjs";
 
 @JsonController("/admin/pos")
@@ -130,6 +131,9 @@ export class AdminPosController {
             paymentDetail.receivedAmount = payments.reduce((acc: number, p: any) => acc + Number(p.amount), 0);
             paymentDetail.balanceAmount = grandTotal - paymentDetail.receivedAmount;
             await this.paymentRepo.save(paymentDetail);
+
+            // Deduct Stock
+            await deductStockForOrder(savedOrder.products as any[], "order", "Order", savedOrder.id);
 
             return response(res, StatusCodes.CREATED, "Order created successfully", savedOrder);
         } catch (error) {

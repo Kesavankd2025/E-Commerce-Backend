@@ -28,9 +28,6 @@ export class CreateAdminUserDto {
     @IsEmail()
     email: string;
 
-    @IsString()
-    companyName: string;
-
     @IsPhoneNumber("IN")
     @IsNotEmpty()
     phoneNumber: string;
@@ -66,10 +63,6 @@ export class UpdateAdminUserDto {
     @IsOptional()
     @IsEmail()
     email?: string;
-
-    @IsOptional()
-    @IsString()
-    companyName?: string;
 
     @IsOptional()
     @IsString()

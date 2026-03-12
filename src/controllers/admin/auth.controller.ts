@@ -287,7 +287,10 @@ export class AuthController {
                                                                     input: "$modules",
                                                                     as: "m",
                                                                     cond: {
-                                                                        $eq: ["$$m._id", "$$perm.moduleId"]
+                                                                        $eq: [
+                                                                            { $toString: "$$m._id" },
+                                                                            { $toString: "$$perm.moduleId" }
+                                                                        ]
                                                                     }
                                                                 }
                                                             },

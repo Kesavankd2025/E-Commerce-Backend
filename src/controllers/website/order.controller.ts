@@ -9,6 +9,7 @@ import { Product } from "../../entity/Product";
 import { CreateOrderDto } from "../../dto/website/order.dto";
 import { handleErrorResponse, response } from "../../utils";
 import { AuthMiddleware } from "../../middlewares/AuthMiddleware";
+import { deductStockForOrder } from "../../utils/stockLogger";
 
 @JsonController("/order")
 export class WebsiteOrderController {
@@ -88,6 +89,9 @@ export class WebsiteOrderController {
             order.orderId = `ORD-${Date.now()}`;
 
             await this.orderRepo.save(order);
+
+            // Deduct Stock
+            await deductStockForOrder(order.products, "order", "Order", order.id);
 
             return response(res, StatusCodes.CREATED, "Order created successfully", order);
         } catch (error: any) {

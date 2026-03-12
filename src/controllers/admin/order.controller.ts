@@ -7,6 +7,7 @@ import { ObjectId } from "mongodb";
 import { StatusCodes } from "http-status-codes";
 import { response, pagination, handleErrorResponse } from "../../utils";
 import { AuthMiddleware } from "../../middlewares/AuthMiddleware";
+import { restoreStockForOrder } from "../../utils/stockLogger";
 
 @JsonController("/orders")
 @UseBefore(AuthMiddleware)
@@ -130,6 +131,9 @@ export class AdminOrderController {
             if (body.status === "Cancelled") {
                 order.cancelReason = body.cancelReason;
                 order.cancelDate = new Date();
+                
+                // Restore Stock
+                await restoreStockForOrder(order.products, "cancel", "Order", order.id);
             }
 
             // Handle Return Creation
@@ -248,6 +252,11 @@ export class AdminOrderController {
             order.orderStatus = body.status;
             order.updatedAt = new Date();
             await this.returnOrderRepo.save(order);
+
+            // Restore Stock if Received to Warehouse
+            if (body.status === "Received to Warehouse") {
+                await restoreStockForOrder(order.products, "return", "ReturnOrder", order.id);
+            }
 
             return response(res, StatusCodes.OK, "Return order status updated successfully", order);
         } catch (error) {
