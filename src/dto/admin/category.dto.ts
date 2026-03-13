@@ -1,4 +1,4 @@
-import { IsOptional, IsNotEmpty, IsString, IsBoolean } from "class-validator";
+import { IsOptional, IsNotEmpty, IsString, IsBoolean, IsNumber } from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateCategoryDto {
@@ -36,6 +36,11 @@ export class CreateCategoryDto {
     @IsString()
     @IsOptional()
     metaDescription?: string;
+
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    displayOrder?: number;
 }
 export class UpdateCategoryDto {
     @IsString()
@@ -72,4 +77,9 @@ export class UpdateCategoryDto {
     @IsString()
     @IsOptional()
     metaDescription?: string;
+
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    displayOrder?: number;
 }

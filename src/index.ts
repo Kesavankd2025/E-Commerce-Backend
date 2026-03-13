@@ -10,6 +10,7 @@ import { seedDefaultModules } from "./seed/modules";
 import { seedPoints } from "./seed/points";
 import { seedVerticalDirectors } from "./seed/vertical-directors";
 import { seedChapterBadges } from "./seed/chapter.badges";
+// import { seedEcommerceData } from "./seed/ecommerce";
 
 import "./cron/attendance.cron";
 import "./cron/membership.cron";
@@ -25,6 +26,7 @@ AppDataSource.initialize()
     await seedPoints();
     await seedVerticalDirectors();
     await seedChapterBadges();
+    // await seedEcommerceData();
 
     const app = express();
 

@@ -51,4 +51,7 @@ export class SubCategory {
 
     @Column({ nullable: true })
     updatedBy?: ObjectId;
+
+    @Column({ default: 0 })
+    displayOrder: number;
 }

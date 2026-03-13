@@ -35,6 +35,35 @@ export class SubCategoryController {
             if (body.metaKeywords !== undefined) doc.metaKeywords = body.metaKeywords;
             if (body.metaDescription !== undefined) doc.metaDescription = body.metaDescription;
 
+            if (body.displayOrder !== undefined && body.displayOrder > 0) {
+                // 1. Check if previous orders exist (Global across all categories)
+                if (body.displayOrder > 1) {
+                    const prevExists = await this.repo.findOne({ 
+                        where: { 
+                            displayOrder: body.displayOrder - 1, 
+                            isDelete: 0 
+                        } 
+                    });
+                    if (!prevExists) return response(res, StatusCodes.BAD_REQUEST, `Please add order ${body.displayOrder - 1} first.`);
+                }
+                // 2. Shift existing orders
+                await this.repo.updateMany(
+                    { 
+                        displayOrder: { $gte: body.displayOrder }, 
+                        isDelete: 0 
+                    },
+                    { $inc: { displayOrder: 1 } }
+                );
+                doc.displayOrder = body.displayOrder;
+            } else {
+                // Default to last order + 1
+                const last = await this.repo.findOne({ 
+                    where: { isDelete: 0 }, 
+                    order: { displayOrder: -1 } 
+                });
+                doc.displayOrder = (last?.displayOrder || 0) + 1;
+            }
+
             doc.isDelete = 0;
             doc.createdBy = new ObjectId(req.user.userId);
             doc.createdAt = new Date();
@@ -69,6 +98,29 @@ export class SubCategoryController {
             if (body.metaKeywords !== undefined) doc.metaKeywords = body.metaKeywords;
             if (body.metaDescription !== undefined) doc.metaDescription = body.metaDescription;
 
+            if (body.displayOrder !== undefined && body.displayOrder !== doc.displayOrder && body.displayOrder > 0) {
+                // 1. Check if previous orders exist (Global)
+                if (body.displayOrder > 1) {
+                    const prevExists = await this.repo.findOne({ 
+                        where: { 
+                            displayOrder: body.displayOrder - 1, 
+                            isDelete: 0 
+                        } 
+                    });
+                    if (!prevExists) return response(res, StatusCodes.BAD_REQUEST, `Please add order ${body.displayOrder - 1} first.`);
+                }
+                // 2. Shift others
+                await this.repo.updateMany(
+                    { 
+                        _id: { $ne: doc.id },
+                        displayOrder: { $gte: body.displayOrder }, 
+                        isDelete: 0 
+                    },
+                    { $inc: { displayOrder: 1 } }
+                );
+                doc.displayOrder = body.displayOrder;
+            }
+
             doc.updatedBy = new ObjectId(req.user.userId);
             doc.updatedAt = new Date();
 
@@ -96,7 +148,7 @@ export class SubCategoryController {
 
             const pipeline: any[] = [
                 { $match: match },
-                { $sort: { createdAt: -1 } },
+                { $sort: { displayOrder: 1, createdAt: -1 } },
                 {
                     $facet: {
                         data: [{ $skip: page * limit }, { $limit: limit }],

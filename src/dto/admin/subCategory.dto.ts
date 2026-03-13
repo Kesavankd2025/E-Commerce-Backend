@@ -1,4 +1,4 @@
-import { IsOptional, IsNotEmpty, IsMongoId, IsString, IsBoolean } from "class-validator";
+import { IsOptional, IsNotEmpty, IsMongoId, IsString, IsBoolean, IsNumber } from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateSubCategoryDto {
@@ -40,6 +40,11 @@ export class CreateSubCategoryDto {
     @IsString()
     @IsOptional()
     metaDescription?: string;
+
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    displayOrder?: number;
 }
 export class UpdateSubCategoryDto {
     @IsMongoId()
@@ -80,4 +85,9 @@ export class UpdateSubCategoryDto {
     @IsString()
     @IsOptional()
     metaDescription?: string;
+
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    displayOrder?: number;
 }

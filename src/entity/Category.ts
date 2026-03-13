@@ -48,4 +48,7 @@ export class Category {
 
     @Column({ nullable: true })
     updatedBy?: ObjectId;
+
+    @Column({ default: 0 })
+    displayOrder: number;
 }
