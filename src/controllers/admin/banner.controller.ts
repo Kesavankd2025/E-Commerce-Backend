@@ -10,6 +10,7 @@ import {
   QueryParams,
   UseBefore,
   Req,
+  Patch,
 } from "routing-controllers";
 
 import { Response, Request } from "express";
@@ -19,11 +20,8 @@ import { StatusCodes } from "http-status-codes";
 import { AppDataSource } from "../../data-source";
 import { AuthMiddleware, AuthPayload } from "../../middlewares/AuthMiddleware";
 
-import response from "../../utils/response";
-import handleErrorResponse from "../../utils/commonFunction";
-import pagination from "../../utils/pagination";
-
-import { Gallery } from "../../entity/Banner";
+import { response, handleErrorResponse, pagination } from "../../utils";
+import { Banner } from "../../entity/Banner";
 
 interface RequestWithUser extends Request {
   user: AuthPayload;
@@ -31,36 +29,67 @@ interface RequestWithUser extends Request {
 
 @UseBefore(AuthMiddleware)
 @JsonController("/banner")
-export class GalleryController {
-  private galleryRepository = AppDataSource.getMongoRepository(Gallery);
+export class BannerController {
+  private repo = AppDataSource.getMongoRepository(Banner);
+
   @Post("/")
-  async createGallery(
+  async create(
     @Body() body: any,
     @Req() req: RequestWithUser,
     @Res() res: Response,
   ) {
     try {
-      const gallery = new Gallery();
-      gallery.bannerImage = body.galleryImage;
-      gallery.isActive = body.isActive ?? 1;
-      gallery.isDelete = 0;
-      gallery.createdBy = new ObjectId(req.user.userId);
-      gallery.updatedBy = new ObjectId(req.user.userId);
+      const banner = new Banner();
+      banner.title = body.title;
+      banner.description = body.description;
+      banner.link = body.link;
+      banner.image = body.image;
+      banner.status = body.status ?? true;
+      banner.isDelete = 0;
+      banner.createdBy = new ObjectId(req.user.userId);
+      banner.updatedBy = new ObjectId(req.user.userId);
 
-      const saved = await this.galleryRepository.save(gallery);
+      const saved = await this.repo.save(banner);
 
       return response(
         res,
         StatusCodes.CREATED,
-        "Gallery image added successfully",
+        "Banner added successfully",
         saved,
       );
     } catch (error) {
       return handleErrorResponse(error, res);
     }
   }
+
+  @Put("/:id")
+  async update(
+    @Param("id") id: string,
+    @Body() body: any,
+    @Req() req: RequestWithUser,
+    @Res() res: Response,
+  ) {
+    try {
+      const banner = await this.repo.findOneBy({ _id: new ObjectId(id) });
+      if (!banner) return response(res, StatusCodes.NOT_FOUND, "Banner not found");
+
+      banner.title = body.title;
+      banner.description = body.description;
+      banner.link = body.link;
+      banner.image = body.image;
+      banner.status = body.status ?? banner.status;
+      banner.updatedBy = new ObjectId(req.user.userId);
+
+      const updated = await this.repo.save(banner);
+
+      return response(res, StatusCodes.OK, "Banner updated successfully", updated);
+    } catch (error) {
+      return handleErrorResponse(error, res);
+    }
+  }
+
   @Get("/")
-  async getAllGallery(@QueryParams() query: any, @Res() res: Response) {
+  async list(@QueryParams() query: any, @Res() res: Response) {
     try {
       const page = Number(query.page ?? 0);
       const limit = Number(query.limit ?? 10);
@@ -73,34 +102,46 @@ export class GalleryController {
         pipeline.push({ $skip: page * limit }, { $limit: limit });
       }
 
-      const gallery = await this.galleryRepository
-        .aggregate(pipeline)
-        .toArray();
+      const banners = await this.repo.aggregate(pipeline).toArray();
+      const totalCount = await this.repo.countDocuments(match);
 
-      const totalCount = await this.galleryRepository.countDocuments(match);
-
-      return pagination(totalCount, gallery, limit, page, res);
+      return pagination(totalCount, banners, limit, page, res);
     } catch (error) {
       return handleErrorResponse(error, res);
     }
   }
+
+  @Patch("/status/:id")
+  async toggleStatus(@Param("id") id: string, @Res() res: Response) {
+      try {
+          const banner = await this.repo.findOneBy({ _id: new ObjectId(id) });
+          if (!banner) return response(res, StatusCodes.NOT_FOUND, "Banner not found");
+
+          banner.status = !banner.status;
+          await this.repo.save(banner);
+
+          return response(res, StatusCodes.OK, "Status updated successfully", banner);
+      } catch (error) {
+          return handleErrorResponse(error, res);
+      }
+  }
+
   @Delete("/:id")
-  async deleteGallery(@Param("id") id: string, @Res() res: Response) {
+  async delete(@Param("id") id: string, @Res() res: Response) {
     try {
-      const gallery = await this.galleryRepository.findOneBy({
+      const banner = await this.repo.findOneBy({
         _id: new ObjectId(id),
         isDelete: 0,
       });
 
-      if (!gallery) {
-        return response(res, StatusCodes.NOT_FOUND, "Gallery not found");
+      if (!banner) {
+        return response(res, StatusCodes.NOT_FOUND, "Banner not found");
       }
 
-      gallery.isDelete = 1;
+      banner.isDelete = 1;
+      await this.repo.save(banner);
 
-      await this.galleryRepository.save(gallery);
-
-      return response(res, StatusCodes.OK, "Gallery deleted successfully");
+      return response(res, StatusCodes.OK, "Banner deleted successfully");
     } catch (error) {
       return handleErrorResponse(error, res);
     }

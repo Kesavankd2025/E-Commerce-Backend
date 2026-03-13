@@ -36,7 +36,8 @@ export async function seedDefaultModules() {
     "Customer Reports",
     "Vendor Reports",
     "Payment Reports",
-    "Sales Reports"
+    "Sales Reports",
+    "Banner"
   ];
 
   const moduleEntities = modules.map(name => {
